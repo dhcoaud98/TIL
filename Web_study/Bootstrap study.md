@@ -41,10 +41,10 @@
        <div class="col-6">                             ------- (1)
          Column
        </div>
-       <div class="col-4 col-lg-2">                    ------- (2)
+       <div class="col col-lg-2">                    ------- (2)
          Column
        </div>
-       <div class="col-4">
+       <div class="col">
          Column
        </div>
      </div>
