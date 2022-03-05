@@ -205,9 +205,45 @@ template의 `.html`파일에서 작성할 수 있다.
 
 ### HTML Form
 
+* HTML `<form>` 
 
+  사용자로부터 사용자 정보를 입력하는 방식(text, button, checkbox, file, hidden, image, password, radio, reset, submit)을 제공하고, 사용자의 정보를 서버로 전송한다. 
 
+* HTML `<input>`
 
+  사용자의 데이터를 받기 위해서 `type` 속성을 이용한다. 
+
+  **name** : 양식을 제출할 때 `name='message'`에서 `message`를 key로 사용자의 정보를 value로 사용하게 된다. 
+
+  **GET** : 다음의 html에서 action에서 /catch/를 불러오도록 하며 method는 GET으로 지정한다. 
+
+  ```html
+  <!-- articles/templates/throw.html -->
+  
+  <form action="/catch/" method="GET">
+    <label for="message">Throw</label>
+    <input type="text" id="message" name="message">
+    <input type="submit">
+  </form>
+  ```
+
+  ```python
+  # articles/views.py
+  
+  def catch(request):
+      message = request.GET.get('message')
+      context = {
+          'message': message,
+      }
+      return render(request, 'catch.html', context)
+  ```
+
+  ```django
+  <!-- articles/templates/catch.html -->
+  
+  <h1>너가 던져서 내가 받은건 {{ message }}야!</h1>
+  <a href="/throw/">뒤로</a>
+  ```
 
 <br>
 
