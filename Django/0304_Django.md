@@ -11,8 +11,13 @@ import requests   # $ pip install requests 해야함
 
 url = ''
 
+(1)
 response = requests.get(url)
 lotto = response.json()
+
+(2)
+response = requests.get(url, params=params).json()
+lott = response.get('')
 ```
 
 위의 방법으로 url을 요청하고, 응답 받을 수 있다. 
