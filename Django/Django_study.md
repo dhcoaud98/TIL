@@ -39,7 +39,7 @@
 5. Application 생성
 
    ```bash
-   $ python manage.py startapp <앱 명>
+   $ python manage.py startapp <articles>
    ```
 
    :seedling: 하나의 프로젝트는 여러개의 앱을 가질 수 있다. 
@@ -51,9 +51,11 @@
    ```python
    INSTALLED_APPS = [
    	'articles',
-       ...
+       ...,
    ]
    ```
+
+   * 
 
 <br>
 
@@ -81,6 +83,41 @@
        path('index/', views.index),
    ]
    ```
+
+   :red_circle: 동적 라우팅(variable routing) : 주소창에서 직접 검색을 통해 주소를 만드는 것이다. 
+
+   * 다음과 같은 순서로 작성할 수 있다. `views.py`함수에서 인자를 `request`와 `name(사용자에 따라 다르게)`으로 하나더 넘겨주어야 한다. 
+
+     ```python
+     # urls.py
+     
+     from articles import views
+     
+     urlpatterns = [
+         ...,
+         path('hello/<str:name>/', views.hello), 
+     ]
+     ```
+
+     ```python
+     # views.py
+     
+     def hello(request, name):
+         context = {
+             'name': name,
+         }
+         return render(request, 'hello.html', context)
+     ```
+
+     ```django
+     <!-- hello.html -->
+     
+     {% extends 'base.html' %}
+     
+     {% block content %}
+       <h1>안녕 {{ name }}!</h1>
+     {% endblock %}
+     ```
 
 2. views.py
 
@@ -167,4 +204,162 @@ template의 `.html`파일에서 작성할 수 있다.
 <br>
 
 ### HTML Form
+
+
+
+
+
+<br>
+
+<br>
+
+<hr>
+
+### 중요사항!!
+
+* 두번째 app을 생성하고 등록 하려면?
+
+  **App URL mapping**
+
+  ```bash
+  $ python manage.py startapp app2
+  ```
+
+  ```python
+  INSTALLED_APPS = [
+  	'articles',
+      'app2',
+      ...,
+  ]
+  ```
+
+  :small_red_triangle_down:앱이 2개 이상이라면 각각의 앱 안에 **urls.py**를 만들어서 사용할 수 있다. 
+
+  ```python
+  # articles/urls.py
+  
+  from django.urls import path
+  from . import views  # 본인의 경로라는 의미에서 .을 사용한다.
+  
+  
+  urlpatterns = [
+      path('index/', views.index),
+      path('greeting/', views.greeting),
+      path('dinner/', views.dinner),
+      path('throw/', views.throw),
+      path('catch/', views.catch),
+      path('hello/<str:name>/', views.hello),
+  ]
+  ```
+
+  ```python
+  # pages/urls.py
+  
+  from django.urls import path
+  
+  
+  urlpatterns = [
+  
+  ]
+  ```
+
+  <br>
+
+*  project에서 app의 urls.py에 접근하려면?
+
+  **including other URLconfs** : include()를 만나게 되면 일치하는 부분을 잘라내고, 남은 문자열 부분을 후속처리하기 위해 include된 URLconf로 전달한다.
+
+  ```python
+  # firstpjt/urls.py
+  
+  from django.contrib import admin
+  from django.urls import path, include
+  
+  
+  urlpatterns = [
+      path('admin/', admin.site.urls),
+      path('articles/', include('articles.urls')),
+      path('pages/', include('pages.urls')),
+  ]
+  ```
+
+  <br>
+
+* 주소에 name을 붙여서 사용하려면?
+
+  **Naming URL patterns** : 만약 주소를 변경하게 된다면 환경 내의 모든 주소를 바꾸어 주어야 한다. 이를 방지하기 위해 urls.py에서 경로를 등록할 때 `name='index'`와 같이 지정해주면 간단하게 해결 할 수 있다. 
+
+  ```python
+  # articles/urls.py
+  
+  urlpatterns = [
+      path('index/', views.index, name='index'),
+      path('greeting/', views.greeting, name='greeting'),
+      path('dinner/', views.dinner, name='dinner'),
+  	...
+  ]
+  ```
+
+  ```django
+  <!-- index.html -->
+  
+  {% extends 'base.html' %}
+  
+  {% block content %}
+    <h1>만나서 반가워요!</h1>
+    <a href="{% url 'greeting' %}">greeting</a>
+    <a href="{% url 'dinner' %}">dinner</a>
+  {% endblock %}
+  ```
+
+  여기서 `a 태그`를 사용한다. `href='{% url 'greeting' %}'`과 같이 작성해주어야 한다. 
+
+  <br>
+
+* URL에도 namespace를 사용할 수 있다!
+
+  **URL namespace** : 앱이 여러개 생성되면 문제가 발생한다. 첫번째 앱의 `index.html`와 두번째 앱의 `index.html`을 구분할 수 없기 때문이다. 이를 위해 url에도 이름을 지정해야 한다. 
+
+  ```python
+  # pages/urls.py
+  
+  app_name = 'pages'
+  urlpatterns = [
+      path('index/', views.index, name='index'),
+  ]
+  ```
+
+  ```python
+  # articles/urls.py
+  
+  app_name = 'articles'
+  urlpatterns = [
+      ...,
+  ]
+  ```
+
+  :exclamation: `:`연산자를 사용해서 접근한다. 
+
+  ```django
+  <!-- articles/templates/index.html -->
+  
+  {% extends 'base.html' %}
+  
+  {% block content %}
+    <h1>만나서 반가워요!</h1>
+    <a href="{% url 'articles:greeting' %}">greeting</a>
+    <a href="{% url 'articles:dinner' %}">dinner</a>
+    <a href="{% url 'articles:throw' %}">throw</a>
+  
+    <h2><a href="{% url 'pages:index' %}">두번째 앱 index로 이동</a></h2>
+  {% endblock %}
+  ```
+
+  <br>
+
+* Django에서는 `app_name/templates/`까지의 경로에서 순서대로 `.html`파일을 검색하기 때문에 내가 원하지 않는 `.html`의 파일을 사용할 수 있다. 이를 위해 app내의 template안에 `app_name`과 동일한 폴더를 만들어 준 후 그 안에 `.html`파일을 넣어주는 것이 좋다. 
+
+  예시 ) `app_name/templates/app_name`
+
+  
 
