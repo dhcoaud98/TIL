@@ -254,9 +254,13 @@ QuerySet의 모든 행에 대해 SQL 삭체 쿼리를 수행하고 반환
 article.delete()
 ```
 
+<br>
 
+<br>
 
 ---
+
+<br>
 
 위의 모든 과정은 `models.py`에서 테이블을 생성하고, `articles/views.py`에 함수로써 작성할 수 있다. 
 
