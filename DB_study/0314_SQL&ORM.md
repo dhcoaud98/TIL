@@ -62,7 +62,7 @@
 * **CREATE** : 테이블 생성하기
 
   ```sqlite
-  -- 새로운 파일을 .csv로 생성하기
+  -- 새로운 파일을 .sql 생성하기
   
   CREATE TABLE classmate (
   	id INTEGER PRIMARY KEY,
@@ -111,7 +111,7 @@
 
    :small_red_triangle_down:`id` 값 넣어 테이블 생성
 
-   ```sqlite
+   ```sql
    CREATE TABLE classmate (    
        id INTEGER PRIMARY KEY,    
        name TEXT NOT NULL,    
@@ -347,5 +347,4 @@
    ```
 
    
-
 
