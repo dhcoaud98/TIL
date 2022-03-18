@@ -353,10 +353,157 @@
 :red_circle: **중요사항!!**
 
 1. **Variable Routing**
+
+   URL 주소를 변수로 사용한다. URL에서 검색을 통해 view 함수의 인자로 넘길 수 있다. 이때 `name`과 `age`를 view의 인자로 넘겨주어야 사용할 수 있다. 
+
+   ```python
+   path('movies/<int:score>', ...),
+   path('users/<str:name>/<int:age>', views.hello),
+   ```
+
+   ```python
+   def hello(requset, name, age):
+       context = {
+           'name': name,
+           'age': age,
+       }
+       return render(request, 'hello.html', context)
+   ```
+
 2. **APP URL mapping**
 
-<br>
+   app의 view 함수가 많아지면서 사용하는 path()가 많아지고, app이 늘어나면서 프로젝트의 `urls.py`에서 모두 관리하는 것은 프로젝트 유지 보수에 악영향을 미친다. 이런 문제를 해결하기위해 각 app에 `urls.py`를 작성하게 된다.
+
+   ```python
+   # settings.py
+   
+   INSTALLED_APPS = [
+   	'pages',
+       ...,
+   ]
+   ```
+
+   ```python
+   # pages/urls.py
+   
+   from django.urls import path
+   from . import views  # 본인의 경로라는 의미에서 .을 사용한다.
+   
+   
+   urlpatterns = [
+       path('index/', views.index),
+       path('greeting/', views.greeting),
+       path('dinner/', views.dinner),
+       path('throw/', views.throw),
+       path('catch/', views.catch),
+       path('hello/<str:name>/', views.hello),
+   ]
+   ```
+
+3. **Including other URLconfs**
+
+   프로젝트에서 앱의 `urls.py`에 접근 할 수도 있다. `include`를 사용하는데 include()를 만나게 되면 일치하는 부분을 잘라내고, 남은 문자열 부분을 후속처리하기 위해 include된 URLconf로 전달한다.  
+
+   ```python
+   # firstpjt/urls.py
+   
+   from django.contrib import admin
+   from django.urls import path, include   ---(1)
+   
+   urlpatterns = [
+       path('admin/', admin.site.urls),
+       path('articles/', include('articles.urls')),
+       path('pages/', include('pages.urls')),
+   ]
+   ```
+
+   (1)의 부분을 꼭 작성해주어야함!!
+
+4. **Naming URL patterns**
+
+   주소를 변경되는 경우에 모든 파일에서 변경해주어야 하는 일을 방지하기위해 `urls.py`에서 경로를 등록할 때 `name='index'`와 같이 지정해주면 간단하게 해결할 수 있다.  
+
+   ```python
+   # articles/urls.py
+   
+   urlpatterns = [
+       path('index/', views.index, name='index'),
+       path('greeting/', views.greeting, name='greeting'),
+       path('dinner/', views.dinner, name='dinner'),
+   	...
+   ]
+   ```
+
+   ```django
+   <!-- index.html -->
+   
+   {% extends 'base.html' %}
+   
+   {% block content %}
+     <h1>만나서 반가워요!</h1>
+     <a href="{% url 'greeting' %}">greeting</a>
+     <a href="{% url 'dinner' %}">dinner</a>
+   {% endblock %}
+   ```
+
+   여기서 `a 태그`를 사용한다. `href='{% url 'greeting' %}'`과 같이 작성해주어야 한다. 
+
+
+5. **URL namespace**
+
+   URL에도 namespace를 사용할 수 있다! 앱이 여러개 생성되면 문제가 발생한다. 첫번째 앱의 `index.html`와 두번째 앱의 `index.html`을 구분할 수 없기 때문이다. 이를 위해 url에도 이름을 지정해야 한다. 
+
+   ```python
+   # pages/urls.py
+   
+   app_name = 'pages'
+   urlpatterns = [
+       ...,
+       path('index/', views.index, name='index'),
+       ...,
+   ]
+   ```
+
+   ```python
+   # articles/urls.py
+   
+   app_name = 'articles'
+   urlpatterns = [
+       ...,
+   ]
+   ```
+
+   :exclamation: `:`연산자를 사용해서 접근한다. 
+
+   ```django
+   <!-- articles/templates/index.html -->
+   
+   {% extends 'base.html' %}
+   
+   {% block content %}
+     <h1>만나서 반가워요!</h1>
+     <a href="{% url 'articles:greeting' %}">greeting</a>
+     <a href="{% url 'articles:dinner' %}">dinner</a>
+     <a href="{% url 'articles:throw' %}">throw</a>
+   
+     <h2><a href="{% url 'pages:index' %}">두번째 앱 index로 이동</a></h2>
+   {% endblock %}
+   ```
+
+   <br>
+
+   * Django에서는 `app_name/templates/`까지의 경로에서 순서대로 `.html`파일을 검색하기 때문에 내가 원하지 않는 `.html`의 파일을 사용할 수 있다. 이를 위해 app내의 template안에 `app_name`과 동일한 폴더를 만들어 준 후 그 안에 `.html`파일을 넣어주는 것이 좋다. 
+
+     예시 ) `app_name/templates/app_name`
+
+6. **url template tag**
+
+   ```django
+   {% url ' ' %}
+   ```
+
+   `naming URL pattern`과 `URL namespace`에서 사용한 방법으로 a태그에서 사용한다. 
 
 <br>
 
-1. 
+<br>
