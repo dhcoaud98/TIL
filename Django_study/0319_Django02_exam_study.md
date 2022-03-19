@@ -202,10 +202,39 @@ Model
 
 DB를 조작하기 위해(DB에 인스턴스 객체를 얻기 위해) 쿼리문을 날린다. 이때, 레코드가 하나만 있으면 인스턴스 객체로, 두 개 이상이면 쿼리 셋으로 리턴한다.
 
-```shell
->>> Article.objects.all()
-<QuerySet []>
-```
+* **all()**	
+
+  현재 QuerySet의 복사본을 반환한다. 
+
+  ```python
+  >>> Article.objects.all()
+  <QuerySet []>
+  <QuerySet [<Article: Article object (1)>, <Article: Article object (2)>]>
+  ```
+
+* **get()**
+
+  괄호에 주어진 lookup 매개변수와 일치하는 객체를 반환한다. 객체를 찾을 수 없다면 'DoesNotExist' 예외를 발생시키고, 둘 이상의 객체를 찾으면 'MultipleObjectsReturned' 예외를 발생시킨다. **고유성을 보장하는 조회에서만 사용해야한다!!!**
+
+  ```python
+  >>> article = Article.objects.get(pk=100)
+  DoesNotExist = ...
+  
+  >> article = Article.objects.get(content = 'django!')
+  MultipleObjectsReturned = ...
+  ```
+
+* **filter**
+
+  주어진 Lookup 매개변수와 일치하는 객체를 포함하는 새 QuerySet을 반환한다. 
+
+  ```python
+  >>> Article.objects.filter(content='django!')
+  <QuerySet [<Article: first>, <Article: third>]>
+  
+  >>> Article.objects.filter(title='first')
+  <QuerySet [<Article: first>]>
+  ```
 
 #### 2. CREAT
 
@@ -213,7 +242,7 @@ DB를 조작하기 위해(DB에 인스턴스 객체를 얻기 위해) 쿼리문�
 
 1. 인스턴스 생성 후 인스턴스 변수 설정하기
 
-   ```shell
+   ```python
    (1) 인스턴스 생성하기
    
    >>> article = Article()      
@@ -233,23 +262,115 @@ DB를 조작하기 위해(DB에 인스턴스 객체를 얻기 위해) 쿼리문�
 
 2. 인스턴스와 변수를 함께 설정하기
 
+   ```python
+   article = Article(title='title', content='content')
+   
+   >>> article
+   <Article: Article object (None)> 
+   # 아직 저장이 안되어 있음!! save를 하지 않았기 때문에
+   
+   >>> article.save()
+   >>> article
+   <Article: Article object (2)>
+   >>> Article.objects.all()
+   <QuerySet [<Article: Article object (1)>, <Article: Article object (2)>]>
+   
+   >>> article.pk
+   2
+   ```
+
+3. QuerySet API - create() 사용하기 ---- all()이 아님에 주의!!
+
+   ```python
+   # 위의 방식과는 다르게 바로 쿼리 표현식을 리턴. save하지 않아도 됨
+   
+   >>> Article.objects.create(title='title', content='content')
+   <Article: Article object (3)>
+   ```
+
+* **save()**는 객체를 데이터베이스를 저장한다. 데이터 생성 시 save()를 호출하기 전에는 객체의 ID값이 무엇인지 알 수 없다. ID 값은 Django가 아니라 DB에서 계산되기 때문이다. 단순히 모델을 인스턴스화 하는 것은 DB에 영향을 미치지 않기 때문에 반드시 save()가 필요하다. 
+
+* **str method**
+
+  ```python
+  def __str__(self):
+      return self.title
+  ```
+
+  표준 파이썬 클래스의 메소드인 str()을 정의하여 각각의 object가 사람이 읽을 수 있는 문자열을 반환(return)하도록 할 수 있다. 작성 후 반드시 shell_plus를 재 시작해야 반영 된다. 
+
 #### 3. UPDATE
 
+* article 인스턴스 객체의 인스턴스 변수의 값을 변경 후 저장
 
+  ```python
+  >>> article = Article.objects.get(pk=1)
+  >>> article.title
+  'first'
+  
+  # 값을 변경하고 저장
+  >>> article.title = 'byebye'
+  >>> article.save()
+  
+  # 변경된 것을 확인
+  >>> artielc.title
+  'byebye'
+  ```
 
 #### 4. DELETE
 
+* **delete()**
 
+  QuerySet의 모든 행에 대해 SQL 삭제 쿼리를 수행하고, 삭제된 객체 수와 객체 유형당 삭제 수가 포함된 딕셔너리를 반환한다. 
 
+  ```python
+  >>> article = Article.objects.get(pk=1)
+  
+  # 삭제
+  >>> article.delete()
+  (1, {'articles.Article': 1})
+  
+  # 1번은 이제 찾을 수 없음
+  >>> Article.objects.get(pk=1)
+  DoesNotExist = ...
+  ```
 
+<br>
 
-
+- Field lookup : 조회 시 특정 검색 조건을 지정한다. QuerySet 메서드 filter(), get(), exclude()에 대한 키워드 인수로 지정된다. 
 
 <br>
 
 ### Admin Site
 
+1. **Automatic admin interface**
 
+   사용자가 아닌 서버의 관리자가 활용하기 위한 페이지이다. model class를 admin.py에 등록하고 관리한다. 레코드 생성 여부 확인에 매우 유용하며, 직접 레코드를 삽입할 수도 있다. 
+
+2. **admin 생성**
+
+   ```bash
+   $ python manage.py createsuperuser
+   ```
+
+   관리자 계성 생성 후 서버를 실행한 다음 '/admin'으로 가서 관리자 페이지 로그인한다.
+
+3. **admin 등록**
+
+   admin.py는 관리자 사이트에 Article 객체가 관리가 인터페이스를 가지고 있다는 것을 알려준다. 
+
+   ```python
+   from django.contrib import admin
+   from .models import Article
+   
+   class ArticleAdmin(admin.ModelAdmin):
+       list_display = ('pk', 'title', 'content', 'created_at', 'updated_at')
+   
+   # admin site에 register 하겠다. 
+   admin.site.register(Article, ArticleAdmin)
+   ```
+
+   'list_display'는 models.py에서 정의한 각각의 속성(컬럼)들의 값(레코드)을 admin 페이지에 출력하도록 설정
 
 <br>
 
