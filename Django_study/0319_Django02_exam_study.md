@@ -374,4 +374,337 @@ DB를 조작하기 위해(DB에 인스턴스 객체를 얻기 위해) 쿼리문�
 
 <br>
 
+### CRUD with views
+
+* CRUD를 직접 작성 해보기!
+
+  1. 프로젝트 생성
+
+  2. 앱 생성(articles)
+
+  3. 앱 등록
+
+  4. base 템플릿 작성 및 추가 템플릿경로 등록
+
+  5. 앱 안에 `urls.py` 만들고 경로 생성, `views.py`작성, `templates/articles/index.html`에 index 페이지 작성
+
+     ```python
+     # articles/urls.py
+     
+     app_name = 'articles'    ----> :연산자로 접근
+     urlpatterns = [
+         path(...)
+     ]
+     ```
+
+  6. **READ** - 전체 게시글 조회하기
+
+     ```python
+     # articles/views.py
+     
+     def index(request):
+     	articles = Article.objects.all()
+         """
+         순서변경
+         articles = Article.objects.all()[::-1]
+         """
+         content = {
+             'articles': articles,
+         }
+         return render(request, 'articles/index.html', context)
+     ```
+  
+     ```django
+     <!-- templates/articles/index.html -->
+     
+     ...
+     {% for article in articles %}
+     	<p>{{ article.pk }}</p>
+     	<p>{{ article.title }}</p>
+     	<p>{{ article.content }}</p>
+     ...
+     ```
+  
+  7. **CREATE** 새로운 데이터를 추가(생성)하기
+
+     :seedling: new-> create
+
+     ```python
+     # articles/urls.py
+     
+     path('new/', views.new, name='new'),
+     path('create/', views.create, name='create'),
+     ```
+  
+     ```python
+     # articles/views.py
+     
+     def new(request):
+         return render(request, 'articles/new.html')
+     
+     def create(request):
+         title = request.GET.get('title')
+         content = request.GET.get('content')
+         
+         # 생성, 저장
+         article = Article(title=title, content=content)
+         article.save()
+         
+         return render(request, 'articles/create.html')
+      
+     ```
+     
+     ```django
+     <!-- templates/articles/new.html -->
+     
+     ...
+     <h1 class="text-center">NEW</h1>
+     <form action="{% url 'articles:create' %}" method='GET'>
+         <label for="title">Title: </label>
+         <input type="text" name="title"><br>
+         <label for="content">Content: </label>
+         <textarea name="content" cols="30" rows="5"></textarea><br>
+         <input tye='submit'>
+     </form>
+     <a href="{% url 'articles:index '%}">뒤로</a>
+     ...
+     ```
+     
+     ```django
+     <!-- templates/articles/create.html -->
+     
+     ...
+     <h1>
+         성공적으로 글이 작성되었습니다. 
+     </h1>
+     ...
+     ```
+     
+     |                       GET                       |                             POST                             |
+     | :---------------------------------------------: | :----------------------------------------------------------: |
+     | 1. 특정 리소스를 가져오도록 요청할 때 사용한다. |            2. 서버로 데이터를 전송할 때사용한다.             |
+     |  2. 반드시 데이터를 가져올 때만 사용해야 한다.  | 2. 리소스를 생성/변경하기 위해 데이터를 HTTP body에 담아 전송 |
+     |           3. DB에 변화를 주지 않는다.           |                  3. 서버에 변경사항을 만듦                   |
+     |            4. CRUD에서 R역할을 담당             |                4. CRUD에서 C/R/D 역할을 담당                 |
+     
+  
+* 사이트 간 요청 위조(Cross-site request forgery)
+
+  웹 애플리케이션 취약점 중 하나로 사용자가 자신의 의지와 무관하게 공격자가 의도한 행동을 하여 특정 웹 페이지를 보안에 취약하게 하거나 수정, 삭제 등의 작업을 하게 만드는 공격 방법
+
+  Django는 CSRF에 대항하여 middlewart와 template tag를 제공한다.
+
+  **CSRF Token** : 사용자의 데이터에임의의 난수 값을 부여해, 매 요청마다 해당 난수 값을 포함시켜 전송 시키도록한다. 이후 서버에서 요청을 받을 때마다 전달된 token 값이 유효한지 검증한다. 일반적으로 데이터 변경이 가능한 POST, PATCH, DELETE Method 등에 적용한다.(GET 제외) Django는 CSRF token 템플릿 태그를 제공한다. 
+
+  ```django
+  {% csrf_token %}
+  ```
+
+  input type이 hidden으로 작성되며 value는 Django에서 생성한 hash 값으로 설저된다. 해당 태그 없이 요청을 보낸다면 Django 서버는 403 forbidden을 응답한다. 
+
+  **Middlewart** : 공통 서비스 및 기능을 애플리케이션에 제공하는 소프트웨어이다. 데이터 관리, 애플리케이션 서비스, 메시징, 인증 및 API 관리를 주로 미들웨어를 통해 처리한다. 개발자들이 애플리케이션보다 효율적으로 구축할 수 있도록 지원하며, 애플리케이션, 데이터 및 사용자 사이를 연결하는 요소처럼 작동한다.  
+
+* **POST**를 사용하여 로직을 수정하기!!
+
+  ```python
+  # articles/views.py
+  
+  def new(request):
+      return render(request, 'articles/new.html')
+  
+  def create(request):
+      title = request.POST.get('title')
+      content = request.POST.get('content')
+      
+      # 생성, 저장
+      article = Article(title=title, content=content)
+      article.save()
+      
+      return render(request, 'articles/create.html')
+  ```
+
+  ```html
+  <!-- templates/articles/new.html -->
+  
+  ...
+  <h1 class="text-center">NEW</h1>
+  <form action="{% url 'articles:create' %}" method='POST'>
+      <label for="title">Title: </label>
+      <input type="text" name="title"><br>
+      <label for="content">Content: </label>
+      <textarea name="content" cols="30" rows="5"></textarea><br>
+      <input tye='submit'>
+  </form>
+  <a href="{% url 'articles:index '%}">뒤로</a>
+  ...
+  ```
+
+* **redirect()** 를 사용하여 create 한후 index.html로 넘어가기!!
+
+  ```python
+  # articles/views.py
+  
+  def create(request):
+  	...
+      
+      # return render(request, 'articles/create.html')
+  	return render(request, 'articles/index.html')
+  ```
+
+  게시글을 작성하면 index 페이지로 이동하긴 하나 새롭게 게시글이 작성되지 않고, URL은 여전히 create에 머물로 있다. 이를 위해 `render` 대신 `redirect()`를 사용한다.
+
+  **redirect()** : 새  URL로 요청을다시 보낸다. 브라우저는 현재 경로에 따라서 전체 URL 자체를 재구성(reconstruct) 한다. 사용 가능한 인자로는 model, view name, absolute or relative URL 등이 있다. 
+
+  ```python
+  # articles/views.py
+  
+  from django.shortcuts import render, redirect
+  
+  def create(request):
+  	...
+      
+      # return render(request, 'articles/create.html')
+  	return redirect('article:index')
+  ```
+
+* **DETAIL** : 게시글 상세 페이지, 글의 번호(pk)를 활용해서 각각의 페이지를 따로 구현해야 한다. 
+
+  ```python
+  # articles/urls.py
+  
+  path('new/', views.new, name='new'),
+  path('create/', views.create, name='create'),
+  path('<int:pk>', view.detail, name='detail'),   -> variable routing
+  ```
+
+  ```python
+  # articles/views.py
+  
+  def detail(request, pk):
+  	article = Article.objects.get(pk=pk)
+      content = {
+          'article': article,
+      }
+      return render(request, 'articles/detail.html', context)
+  
+  def create(request):
+  	...
+      
+      # return render(request, 'articles/create.html')
+  	return redirect('article:detail', article.pk)
+  ```
+
+  ```html
+  <!-- templates/articles/detail.html -->
+  
+  ...
+  	<p>제목 : {{ article.title }}</p>
+  	<p>내용 : {{ article.content }}</p>
+  	...
+  	<a href="{% url 'articles:index' %}">[뒤로]</a>
+  ...
+  ```
+
+  ```html
+  <!-- templates/articles/index.html -->
+  
+  ...
+  {% for article in articles %}
+  	<p>{{ article.pk }}</p>
+  	<p>{{ article.title }}</p>
+  	<p>{{ article.content }}</p>
+  	<a href="{% url 'articles:detail' article.pk %}">[detail]</a>
+  ...
+  ```
+
+* **DELETE** : 모든 글을 삭제 하는 것이 아니라 삭제하고자 하는 특정 글을 삭제해야 한다. 
+
+  ```python
+  # articles/views.py
+  
+  def delete(request, pk):
+  	article = Article.objects.get(pk=pk)
+      if request.method == 'POST':
+  	    article.delete()
+      	return redirect('articles:index')
+      else:
+          return redirect('articles:detail', article.pk)
+  ```
+
+  ```python
+  # articles/urls.py
+  
+  path('<int:pk>/delete/', views.delete, name='delete')
+  ```
+
+  ```html
+  <!-- templates/articles/edit.html -->
+  
+  ...
+  	<p>제목 : {{ article.title }}</p>
+  	<p>내용 : {{ article.content }}</p>
+  	...
+  	...
+  	<form action="{% url 'articles:delete' article.pk %}" method="POST">
+      	{% csrf_token %}
+          <button class="btn btn-danger">DELETE</button>
+  	</form>
+  	<a href="{% url 'articles:index' %}">[뒤로]</a>
+  ...
+  ```
+
+* **EDIT** + **UPDATE** : 수정은 기존에 입력 되어 있던 데이터를 보여주는 것이 좋기 때문에 html 태그의 value 속성을 사용한다. (textarea 태그는 value 속성이 없으므로 태그 내부 값으로 작성)
+
+  ```python
+  # articles/views.py
+  
+  def edit(request, pk):
+      article = Article.objects.get(pk=pk)
+      context = {
+          'article': article,
+      }
+      return render(request, 'articles/edit.html', context)
+  
+  def update(request, pk):
+      article = Article.objects.get(pk=pk)
+      article.title = request.POST.get('title')
+      article.content = request.POST.get('content')
+      article.save()
+      return redirect('articles:detail', article.pk)
+  ```
+
+  ```python
+  # articles/urls.py
+  
+  path('<int:pk>/edit/', views.edit, name='edit')
+  path('<int:pk>/update/', views.update, name='update')
+  ```
+
+  ```html
+  <!-- templates/articles/edit.html -->
+  
+  ...
+  <h1 class="text-center">EDIT</h1>
+  <form action="{% url 'artices:update' article.pk %}" method='POST'>
+      {% csrf_token %}
+      <label for="title">Title: </label>
+      <input type="text" name="title" value="{{ article.title }}"><br>
+      <label for="content">Content: </label>
+      <textarea name="content" cols="30" rows="5">{{ article.content }}</textarea><br>
+      <input tye='submit'>
+  </form>
+  <a href="{% url 'articles:index '%}">뒤로</a>
+  ...
+  ```
+
+  ```html
+  <!-- detail 페이지에 작성하기-->
+  
+  <a href="{% url 'articles:edit' article.pk %}" class="btn btn-primary">EDIT</a>
+  ```
+
+* 
+
+  
+
 <br>
