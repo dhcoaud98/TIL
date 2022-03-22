@@ -173,6 +173,7 @@
 * **Django Template** : 데이터 표현을 제어하는 도구이자 표현에 관련된 로직이다. Django template language를 사용한다. 
 
 * **Django Template Language (DTL)** : 장고에서 사용하는 built-in template system이다. 조건, 반복, 변수 치환, 필터 등의 기능을 제공하고한다. 프레젠테이션을 표현하기 위한 것이다. python 처럼 일부 프로그래밍 구조(if, for 등)를 사용할 수 있지만 해당 python 코드로 실행되는 것은 아니다. 
+  
   1. **Variable**
   
      ```django
@@ -272,12 +273,12 @@
   3. 자식 템플릿에서 부모 템플릿을 확장한다는 것을 알림 (반드시 템플릿 최상단에 작성 되어야 한다. )
 
      ```django
-     -- index.html --
+     <!-- index.html -->
      
      {% extends 'base.html' %}
      
      {% block content %}
-     --내용 작성--
+     <!--내용 작성-->
      {% endblock %}
      ```
 
@@ -298,7 +299,7 @@
      템플릿 내에 다른 템플릿을 "포함(including)"하는 방법
 
      ```python
-     {% include '' %}
+     {% include 'base.html' %}
      ```
 
   6. Django의 설계 철학

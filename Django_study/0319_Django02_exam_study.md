@@ -703,7 +703,7 @@ DB를 조작하기 위해(DB에 인스턴스 객체를 얻기 위해) 쿼리문�
   <a href="{% url 'articles:edit' article.pk %}" class="btn btn-primary">EDIT</a>
   ```
 
-* 
+  
 
   
 
