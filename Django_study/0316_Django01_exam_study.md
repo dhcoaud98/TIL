@@ -1,8 +1,6 @@
 # 03.16
 
-## Django 01
-
-**The Web Framework**
+## Django 01_The Web Framework
 
 <br>
 

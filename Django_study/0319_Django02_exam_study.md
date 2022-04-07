@@ -1,8 +1,6 @@
 # 03.19
 
-## Django 02
-
-Model
+## Django 02 _ Model
 
 <br>
 
