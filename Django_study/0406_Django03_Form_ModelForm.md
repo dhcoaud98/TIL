@@ -94,7 +94,7 @@
 
 * **The Django 'form class'**
 
-  form내 field, field 배치, 디스플레이 widget 등 유효하지 않는 field에 관련된 에러메시지를 결정한다.
+  form내 field, field 배치, 디스플레이 widget 등 유효하지 않는 field에 관련된 에러메시지를 결정한다. Django는 사용자의 데이터를 받을 때 해야 할 과중한 작업과 반복 코드를 줄여 준다.
 
   <br>
 
@@ -130,7 +130,7 @@ def new(request):
 ```
 
 ```django
-# news.html
+<!-- news.html -->
 
 {{ form.as_p }}
 ```
@@ -217,7 +217,7 @@ class ArticleForm(forms.ModelForm):
         # 클래스 변수인 fields와 exclude는 동시에 사용할 수 없다. 
 ```
 
-:small_red_triangle_down: Meta class : Model의 정보를 작성하는 곳이다. ModelForm을 사용할 경우 사용할 모델이 있어야 하는데 Meta class가 이를구성한다. 해당 Model에 정의한 field 정보를 Form에 적용하기 위함이다. Meta 데이터는 `데이터에 대한 데이터`이다. (ex. 사진 촬영 - 사진데이터 - 사진의 메타 데이터(촬영 시각, 렌즈, 조리개 값 등))
+:small_red_triangle_down: Meta class : Model의 정보를 작성하는 곳이다. ModelForm을 사용할 경우 사용할 모델이 있어야 하는데 Meta class가 이를 구성한다. 해당 Model에 정의한 field 정보를 Form에 적용하기 위함이다. Meta 데이터는 `데이터에 대한 데이터`이다. (ex. 사진 촬영 - 사진데이터 - 사진의 메타 데이터(촬영 시각, 렌즈, 조리개 값 등))
 
 #### 2. Create view 수정하기
 
@@ -281,7 +281,7 @@ def create(request):
 # articles/views.py
 
 def update(request, pk):
-    # 기존의 글을 수정하는 것 이므로 form 대신 article을 사용한다. 
+    # 기존의 글을 수정하는 것 이므로 article을 사용한다. 
     article = Articls.objects.get(pk=pk)  # 조회
     if request.method == 'POST':
         form = ArticleForm(request.POST, instance=article)
@@ -367,17 +367,122 @@ class ArticleForm(forms.ModelForm):
 
 ### 3. Rendering field manually
 
-1. 수동으로 작성하기
+1. 수동으로 From 작성하기
 
    * Rendering fields manually
+
+     ```django
+     <!-- articles/create.html -->
+     
+     ...
+     {% csrf_token %}
+     <div>
+       {{ form.title.errors }}
+       {{ form.title.label_tag }}
+       {{ form.title }}
+     </div>
+     <div>
+       {{ form.content.errors }}
+       {{ form.content.label_tag }}
+       {{ form.content }}
+     </div>
+     ...
+     ```
+
    * Looping over the form's fields
+
+     ```django
+     ...
+     {% csrf_token %}
+     {% for field in form%}
+         {{ form.title.errors }}
+         {{ form.title.label_tag }}
+         {{ form.title }}
+     {% endfor %}
+     ...
+     ```
 
 2. Bootstrap과 함께 사용하기
 
    * widget에 작성
 
-   * 외부 라이브러리 사용하기
+     Bootstrap Form의 핵심 class를 widget에 작성 - `form-control`
 
+     ```python
+     ...
+     title = forms.CharField(
+     	label = '제목', 
+         widget = forms.TextInput(
+         	attrs={  
+                 'class': 'my-title form-control',
+                 'placeholder' : 'Enter the title',
+             }
+         ),
+     )
+     ...
+     ```
+   
+     에러 메시지 with bootstrap alert 컴포넌트
+   
+     ```django
+     {% if field.errors %}
+       {% for error in field.errors %}
+         <div class='alert alert-warning'>{{ error|escape }}</div>
+       {% endfor %}
+     {% endif %}
+     ```
+   
+   * 외부 라이브러리 사용하기
+   
+     ```bash
+     $ pip install django-bootstrap-v5
+     ```
+     
+     ```python
+     # settings.py
+     
+     INSTALLED_APPS = [
+         ...
+         'bootstrap5',
+     	...    
+     ]
+     ```
+     
+     ```bash
+     $ pip freeze > requirements.txt
+     # 패키지 목록 업데이트
+     ```
+     
+     ```django
+     <!-- base.html -->
+     
+     {% load bootstraps5 %}
+     <head>
+       ...
+       {% bootstrap_css %}    
+       ...
+     </head>
+     <body>
+       ...
+       {% bootstrap_javascript %}
+       ...
+     </body>
+     ```
+     
+     ```django
+     <!-- article/update.html -->
+     
+     {% extends 'base.html' %}
+     {% load bootstraps5 %}
+     
+     {% block content %}
+         ...
+     	{% bootstrap_form form layout='horizontal' %}
+     	{% buttons submit='Submit' reset='Cancel' %}{% endbuttons %}
+     	...
+     {% endblock %}
+     ```
+     
      
 
 
