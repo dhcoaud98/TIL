@@ -189,7 +189,7 @@ def new(request):
 
 <br>
 
-### 2. Model Form
+### 2. :star:Model Form
 
 * django form을 사용하다보면 model에 정의한 필드를 유저로 부터 입력 받기 위해 form에서 model 필드를 재정의하는 행위가 중복 될 수 있다. 
 
@@ -205,13 +205,14 @@ def new(request):
 
 ```python
 # articles/forms.py
+from django import forms
 from .models import Article
 
 class ArticleForm(forms.ModelForm):
 
     class Meta:
         model = Article
-        fieldds = '__all__'
+        fields = '__all__'
         # exclude = ('title',)
         # 클래스 변수인 fields와 exclude는 동시에 사용할 수 없다. 
 ```
@@ -219,6 +220,10 @@ class ArticleForm(forms.ModelForm):
 :small_red_triangle_down: Meta class : Model의 정보를 작성하는 곳이다. ModelForm을 사용할 경우 사용할 모델이 있어야 하는데 Meta class가 이를구성한다. 해당 Model에 정의한 field 정보를 Form에 적용하기 위함이다. Meta 데이터는 `데이터에 대한 데이터`이다. (ex. 사진 촬영 - 사진데이터 - 사진의 메타 데이터(촬영 시각, 렌즈, 조리개 값 등))
 
 #### 2. Create view 수정하기
+
+* new 함수 삭제
+* new path 삭제
+* `new.html`을 `create.html`로 변경 
 
 ```python
 # articles/views.py
@@ -228,7 +233,8 @@ def create(request):
     if form.is_valid():  # 유효성 검사를 통과했을 경우 detail
         article = form.save()
         return redirect('articles:detail', article.pk)
-    return redirect('articles:new')  # ex) 제목이 10자 이상이어서 유효성 검사를 통과하지 못했다면 new로 다시돌아감!!
+    return redirect('articles:new')  
+	# ex) 제목이 10자 이상이어서 유효성 검사를 통과하지 못했다면 new로 다시돌아감!! 유효성 검사에 맞도록 다시 작성하기
 ```
 
 :small_red_triangle_down: `is_valid()` method : 유효성 검사를 실행하고, 데이터가 유효한지 여부를 boolean으로 반환한다. 데이터 유효성 검사를 보장하기 위한 많은 테스트에 대해 Django는 is_Valid()를 제공한다. 
@@ -264,16 +270,18 @@ def create(request):
     
 ```
 
-`urls.py`도 변경해주기!!
-
 #### 3. Update view 수정하기
 
 `edit`와 `update`를 하나의 함수로 사용해 주기 위해 수정한다. 
+
+* edit path와 edit view 함수를 삭제한다. 
+* edit.html을 update.html로 변경!!
 
 ```python
 # articles/views.py
 
 def update(request, pk):
+    # 기존의 글을 수정하는 것 이므로 form 대신 article을 사용한다. 
     article = Articls.objects.get(pk=pk)  # 조회
     if request.method == 'POST':
         form = ArticleForm(request.POST, instance=article)
@@ -289,13 +297,11 @@ def update(request, pk):
     return render(request, 'articles/update.html', context)
 ```
 
-edit를 update로 변경!!
-
 #### 4. Delete view 수정하기
 
 ```python
-
 def delete(request, pk):
+    # 기존의 글을 삭제하는 것 이므로 form 대신 article을 사용한다. 
     article = Article.objects.get(pk=pk)
     if request.method == 'POST':
         article.delete()
