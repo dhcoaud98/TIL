@@ -361,7 +361,7 @@ class ArticleForm(forms.ModelForm):
 | cleande_data 딕셔너리에서 데이터를 가져온 후 .save() 호출해야 함 | 어떤 레코드를 만들어야 할 지 알고 있으므로 바로 .save()하면 된다. |
 | model에 연관되지 않은 데이터를 받을 때 사용                  |                                                              |
 
-
+---
 
 <br>
 
