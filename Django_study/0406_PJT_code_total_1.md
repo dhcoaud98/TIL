@@ -78,8 +78,8 @@
    # 앱 urls.py
    # articles/urls.py
    
-   from . import views  # 본인의 경로라는 의미에서 .을 사용한다.
    from django.urls import path
+   from . import views  # 본인의 경로라는 의미에서 .을 사용한다.
    ```
 
    ```python
@@ -432,6 +432,9 @@
    * `edit.html`을 `update.html`로 변경!!
 
    ```python
+   from .forms import ArticleForm
+   
+   
    def create(request):
        if request.method == 'POST':
        	form = ArticleForm(request.POST)
@@ -493,7 +496,7 @@
            form = ArticleForm(request.POST)
            if form.is_valid():  # 유효성 검사
                article = form.save()
-           return redirect('articles:detail', article.pk)
+           	return redirect('articles:detail', article.pk)
        else:  # 기존 new 함수
            form = ArticleForm()
        content = {
@@ -553,7 +556,7 @@
        <p>글 내용 : {{ article.content }}</p>
        <hr>
      {% endfor %}
-   {% endblock %}
+   {% endblock content %}
    
    
    <!-- create -->
@@ -568,9 +571,9 @@
        <input type="submit">
      </form>
      <a href="{% url 'articles:index' %}">뒤로</a>
-   {% endblock %}
+   {% endblock content %}
    
-   <!-- delete -->
+   <!-- detail -->
    {% extends 'base.html' %}
    
    {% block content %}
@@ -587,7 +590,7 @@
        <a href="{% url 'articles:update' article.pk %}" class="btn btn-primary"> 수정 </a><br>
        <a href="{% url 'articles:index' %}" class="btn btn-primary"> 뒤로 </a>
        <hr>
-   {% endblock %}
+   {% endblock content %}
    
    <!-- update -->
    {% extends 'base.html' %}

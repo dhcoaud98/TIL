@@ -8,7 +8,7 @@
 
 ---
 
-## Database
+## 1. Database
 
 * DB는 체계화된 데이터들의 모임이다. 효율적으로 자료  정리가 가능하다. 
 * 데이터 중복 최소화, 무결성, 일관성, 독립성, 표준화, 보안 유지 등의 장점이 있다.
@@ -25,7 +25,7 @@
 
 ---
 
-## SQL(Structured Query Language) & ORM
+## 2. SQL(Structured Query Language) & ORM
 
 * RDBMS의 데이터 관리를 위해 설계된 특수 목적의 프로그래밍 언어이다. 
 * **DDL**(CREATE, DROP, ALTER), **DML**(INSERT, SELECT, UPDATE, DELETE) , **DCL**(GRANT, REVOKE, COMMIT, ROLLBACK) 등을 배우게 된다.
