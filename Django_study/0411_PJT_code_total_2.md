@@ -413,7 +413,7 @@ class CustomUserChangeForm(UserChangeForm):
 
 ---
 
-### 2. Comment (댓글 기능 구현)
+### 2. Comment (댓글 기능 구현) + :star: (1:N)관계 설정하기
 
 ```python
 # articles/models.py
@@ -423,6 +423,8 @@ from django.db import models
 
 # 기존의 Article 모델
 class Article(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # user-article 간의 1:N 구조 
+    # like_users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='like_articles')
     title = models.CharField(max_length=10)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -431,15 +433,17 @@ class Article(models.Model):
     def __str__(self):
         return self.title
 
-# 댓글기능을 위한 model을 작성한다. 이름은 Comment이고, 필드는 4가지이다.
+# 댓글기능을 위한 model을 작성한다.
 class Comment(models.Model):
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    # user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # user-comment 간의 1:N 구조
     content = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
-    def __str__(self):  # content가 보일 수 있도록
+
+    def __str__(self):
         return self.content
+
     
     
 """
@@ -471,14 +475,14 @@ class ArticleForm(forms.ModelForm):
 
     class Meta:
         model = Article
-        # fields = '__all__'
-        fields =('title','content',)
-
+        fields =('title', 'content',)
+		# exclude = ('user','like_users')
+        
 class CommentForm(forms.ModelForm):
     
     class Meta:
         model = Comment
-        exclude = ('article',)
+        exclude = ('article','user',)
 ```
 
 ```python
@@ -490,7 +494,7 @@ from .models import Article, Comment
 
 # Register your models here.
 class ArticleAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'title', 'content', 'created_at', 'updated_at',)
+    list_display = ('pk', 'title','content', 'created_at', 'updated_at',)
 
 
 admin.site.register(Article, ArticleAdmin)
@@ -521,44 +525,176 @@ urlpatterns = [
 {% extends 'base.html' %}
 
 {% block content %}
-  <p>제목 : {{ movie.title }}</p>
-  <p>내용 : {{ movie.description }}</p>
-  <a href="{% url 'movies:index' %}" class="btn btn-primary">[뒤로]</a>
+  <h1>DETAIL</h1>
+  <h3>{{ article.pk }}번째 글</h3>
   <hr>
-	<h4>댓글 목록</h4>
-	<ul>
+  <p>제목 : {{ article.title }}</p>
+  <p>내용 : {{ article.content }}</p>
+  <p>작성 시각 : {{ article.created_at }}</p>
+  <p>수정 시각 : {{ article.updated_at }}</p>
+  <hr>
+  {% if request.user == article.user %}
+    <a href="{% url 'articles:update' article.pk %}">수정</a>
+    <form action="{% url 'articles:delete' article.pk %}" method="POST">
+      {% csrf_token %}
+      <input type="submit" value="삭제">
+    </form>
+  {% endif %}
+  <a href="{% url 'articles:index' %}">back</a>
+  <hr>
+  <h4>댓글 목록</h4>
+  <ul>
     {% for comment in comments %}
-      <li>{{ comment.content }}
-        <form action="{% url 'movies:comments_delete' movie.pk comment.pk %}" method="POST" class="d-inline">
-          {% csrf_token %}
-          <input type="submit" value="DELETE">
-        </form>
+      <li>
+        {{ comment.user }} - {{ comment.content }}
+        {% if request.user == comment.user %}
+          <form action="{% url 'articles:comment_delete' article.pk comment.pk %}" method="POST">
+            {% csrf_token %}
+            <input type="submit" value="삭제">
+          </form>
+        {% endif %}
       </li>
-    {% empty %}
-      <p>댓글이 없어요...</p>
     {% endfor %}
-	</ul>
-	<form action="{% url 'movies:comments_create' movie.pk %}" method="POST">
-    {% csrf_token %}
-    {{ comment_form }}
-    <input type="submit">
-	</form>	
+  </ul>
   <hr>
-  <form action="{% url 'movies:delete' movie.pk %}" method="POST">
-    {% csrf_token %}
-    <button class="btn btn-danger">[삭제]</button>
-  </form>
-  <a href="{% url 'movies:update' movie.pk %}" class="btn btn-primary">[수정]</a>
-  <hr>
-{% endblock %}
+  {% if request.user.is_authenticated %}
+    <form action="{% url 'articles:comment_create' article.pk %}" method="POST">
+      {% csrf_token %}
+      {{ comment_form }}
+      <input type="submit">
+    </form>
+  {% else %}
+    <a href="{% url 'accounts:login' %}">[댓글을 작성하려면 로그인하세요.]</a>
+  {% endif %}
+{% endblock content %}
 
 ```
 
 ```python
+# 전체 수정코드
 # articles/views.py
+
 from .forms import ArticleForm, CommentForm
 from django.views.decorators.http import require_http_methods, require_POST
 from django.contrib.auth.decorators import login_required
+
+
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.http import require_http_methods, require_POST, require_safe
+from .models import Article, Comment
+from .forms import ArticleForm, CommentForm
+
+# Create your views here.
+@require_safe
+def index(request):
+    articles = Article.objects.order_by('-pk')
+    context = {
+        'articles': articles,
+    }
+    return render(request, 'articles/index.html', context)
+
+
+@login_required
+@require_http_methods(['GET', 'POST'])
+def create(request):
+    if request.method == 'POST':
+        form = ArticleForm(request.POST)
+        if form.is_valid():
+            article = form.save(commit=False)
+            article.user = request.user
+            article.save()
+            return redirect('articles:detail', article.pk)
+    else:
+        form = ArticleForm()
+    context = {
+        'form': form,
+    }
+    return render(request, 'articles/create.html', context)
+
+
+@require_safe
+def detail(request, pk):
+    article = get_object_or_404(Article, pk=pk)
+    comment_form = CommentForm()
+    # 조회한 article의 모든 댓글을 조회(역참조)
+    comments = article.comment_set.all()
+    context = {
+        'article': article,
+        'comment_form': comment_form,
+        'comments': comments,
+    }
+    return render(request, 'articles/detail.html', context)
+
+
+@require_POST
+def delete(request, pk):
+    article = get_object_or_404(Article, pk=pk)
+    if request.user.is_authenticated:
+        if request.user == article.user:
+            article.delete()
+    return redirect('articles:index')
+
+
+@login_required
+@require_http_methods(['GET', 'POST'])
+def update(request, pk):
+    article = get_object_or_404(Article, pk=pk)
+    if request.user == article.user:
+        if request.method == 'POST':
+            form = ArticleForm(request.POST, instance=article)
+            if form.is_valid():
+                article = form.save()
+                return redirect('articles:detail', article.pk)
+        else:
+            form = ArticleForm(instance=article)
+    else:
+        return redirect('articles:index')
+    context = {
+        'article': article,
+        'form': form,
+    }
+    return render(request, 'articles/update.html', context)
+
+
+@require_POST
+def comment_create(request, pk):
+    if request.user.is_authenticated:
+        article = get_object_or_404(Article, pk=pk)
+        comment_form = CommentForm(request.POST)
+        if comment_form.is_valid():
+            comment = comment_form.save(commit=False)
+            comment.article = article
+            comment.user = request.user
+            comment.save()
+        return redirect('articles:detail', article.pk)
+    return redirect('accounts:login')
+
+
+@require_POST
+def comment_delete(request, article_pk ,comment_pk):
+    if request.user.is_authenticated:
+        comment = get_object_or_404(Comment, pk=comment_pk)
+        if request.user == comment.user:
+            comment.delete()
+    return redirect('articles:detail', article_pk)
+
+
+# 좋아요 기능 구현
+@require_POST
+def likes(request, article_pk):
+    if request.user.is_authenticated:  # 로그인 된 사용자라면?
+        article = get_object_or_404(Article, pk=article_pk)
+        
+        # 좋아요 취소(좋아요 목록에 있는데, 좋아요를 한번 더 눌렀다면 좋아요 취소)
+        if article.like_users.filter(pk=request.user.pk).exists():
+            article.like_users.remove(request.user)
+        # 좋아요 
+        else:
+            article.like_users.add(request.user)
+        return redirect('articles:index')
+    return redirect('accounts:login')
 
 # 수정하기
 def detail(request, pk):
@@ -581,6 +717,7 @@ def comments_create(request, pk):
         if comment_form.is_valid():
             comment = comment_form.save(commit=False)
             comment.article = article  # article 조회한 거 넣어줌
+            comment.user = rquest.user
             comment.save()
         return redirect('articles:detail', article.pk)
     return redirect('accounts:login')
@@ -667,6 +804,46 @@ def comments_delete(request, article_pk, comment_pk):
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
 </body>
     
+</html>
+```
+
+```django
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+  <script src="https://kit.fontawesome.com/aa1284d2fd.js" crossorigin="anonymous"></script>
+  <title>Document</title>
+</head>
+<body>
+  <div class="container">
+    
+    {% if request.user.is_authenticated %}
+      <h3>Hello, {{ user }}<i class="fa-solid fa-heart"></i></h3>
+      <form action="{% url 'accounts:logout' %}" method="POST">
+        {% csrf_token %}
+        <input type="submit" value="Logout">
+      </form>
+      <a href="{% url 'accounts:update' %}">회원정보수정</a>
+      <form action="{% url 'accounts:delete' %}" method="POST">
+        {% csrf_token %}
+        <input type="submit" value="회원탈퇴">
+      </form>
+    {% else %}
+      <a href="{% url 'accounts:login' %}">Login</a>
+      <a href="{% url 'accounts:signup' %}">Signup</a>
+    {% endif %}
+
+    <hr>
+
+    {% block content %}
+    {% endblock content %}
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+</body>
 </html>
 ```
 

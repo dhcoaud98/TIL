@@ -94,13 +94,12 @@
    
    # 모든 열에 데이터가 있는 경우 column을 명시하지 않아도 됨!
    INSERT INTO classmates VALUES ('홍길동', 30, '서울')
-   
    ```
-
+   
    `id`는 SQLite는 따로 PRIMARY KEY 속성의 컬럼을 작성하지 않으면 값이 자동으로 증가하는 PK 옵션을 가진 `rowid` 컬럼을 정의한다. 
-
+   
    주소가 꼭 필요한 정보라면 공백으로 비워두면 안된다. (NOT NULL 설정 필요)
-
+   
    ```sql
    sqlite> CREATE TABLE classmates (
    sqlite> id INTEGER PRIMARY KEY,
@@ -109,16 +108,15 @@
    sqlite> address TEXT NOT NULL
    sqlite> );
    ```
-
+   
    위 처럼 id 컬럼을 명시 해주었을 경우에는 id 값을 입력 하지 않을 경우 오류가 발생한다. 
-
+   
    ```sql
    INSERT INTO classmates VALUES ('홍길동', 30, '서울');  # 오류 발생
    INSERT INTO classmates Values (4, '홍길동', 30, '서울');
    INSERT INTO classmates (name, age, address) Values (4, '홍길동', 30, '서울');
-   
    ```
-
+   
    `rowid`를 자동으로 생성해주므로 id 없이 테이블을 생성할 수 있다. 
 
    ```sql
@@ -128,16 +126,16 @@
    sqlite> address TEXT NOT NULL
    sqlite> );
    ```
-
+   
    ```sql
-   INSERT TNRO classmates Values 
+   INSERT INTO classmates Values 
    ('홍길동', 30, '서울'),
    ('김철수', 30, '대전'),
    ('이싸피', 26, '광주'),
    ('박삼성', 29, '구미'),
    ('최전자', 28, '부산');
    ```
-
+   
 3. **READ**
 
    > SELECT
@@ -192,7 +190,7 @@
 
    ```sql
    CREATE TABLE classmates (
-   id INTEGER PRIMARY KEY AUTHINCREMENT,
+   id INTEGER PRIMARY KEY AUTOINCREMENT,
    name TEXT
    );
    ```
@@ -375,7 +373,7 @@
 
 ### DB_02_Model Relationship_1
 
-#### 1. Forein Key
+#### 1. Foreign Key
 
 > 외래 키(외부 키)
 >
