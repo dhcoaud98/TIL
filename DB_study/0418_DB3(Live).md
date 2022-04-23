@@ -496,14 +496,14 @@ def profile(request, username):
 <hr>
 
 <h2>{{ persen.username }}'s 게시글</h2>
-{% for comment in person.comment_ser.all %}
+{% for comment in person.comment_set.all %}
   <div>{{ comment.title }}</div>
 {% endfor %}
 
 <hr>
 
 <h2>{{per.username }}'s 댓글</h2>
-{% for comment in person.comment_ser.all %}
+{% for comment in person.comment_set.all %}
   <div>{{ comment.content }}</div>
 {% endfor %}
 

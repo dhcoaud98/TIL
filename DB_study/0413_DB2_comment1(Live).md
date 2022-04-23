@@ -198,7 +198,7 @@ def detail(request, pk):
     comment_form = CommentForm()
     context= {
         'article':article,
-        'comment_form': comment_form,
+        'comment_form': comment_form,  # 모든 필드 출력
     }
     return render(request, 'articles/detail.html', context)
 ```
@@ -229,7 +229,7 @@ class CommentForm(forms.ModelForm):
     
     class Meta:
         model = Comment
-        exclude = ('article',)
+        exclude = ('article',)  # article 제외하고 출력
 ```
 
 ```python
@@ -264,7 +264,7 @@ def comments_create(request, pk):
         article = get_object_or_404(Article, pk=pk)  # article 조회
         comment_form = CommentForm(request.POST)
         if comment_form.is_valid():
-            comment = comment_form.save(commit=False)
+            comment = comment_form.save(commit=False)  # db에 저장하지 않고, 인스턴스를 반환한다. 
             comment.article = article  # article 조회한 거 넣어줌
             comment.save()
         return redirect('articles:detail', article.pk)
@@ -284,8 +284,8 @@ from .forms import ArticleForm, CommentForm
 
 def detail(request, pk):
     article = get_object_or_404(Article, pk=pk)
-    comment_form = CommentForm()
-    comments = article.comment_set.all()  # 역참조
+    comment_form = CommentForm()  # 모든 댓글 필드 : 새로운 댓글을 작성하기 위해
+    comments = article.comment_set.all()  # 역참조 : 이미 작성한 댓글을 보기 위해
     context= {
         'article':article,
         'comment_form': comment_form,
@@ -363,7 +363,7 @@ from .models import Article, Comment
 @require_POST
 def comments_delete(request, article_pk, comment_pk):
     if request.user.is_authenticated:  # 인증된 사용자만
-        comment = get_object_or_404(Comment, pk=comment_pk)
+        comment = get_object_or_404(Comment, pk=comment_pk)  # 현재 댓글을 불러옴
         comment.delete()
     return redirect('articles:detail', article_pk)
 ```
@@ -450,7 +450,7 @@ UserCreationForm과 UserChangeForm은 기존 내장 User 모델을 사용한 Mod
   from  import UserCreationForm
   
   
-  class CustomUserCreationForm(UserCreationForm):
+  class CustomUserCreationForm(UserCreationForm):  # customusercreationform은 usercreationform을 상속
       
       class Meta(UserCreationForm.Meta):
           # get_user_model 
@@ -466,16 +466,16 @@ UserCreationForm과 UserChangeForm은 기존 내장 User 모델을 사용한 Mod
   
   @require_http_methods(['GET', 'POST'])
   def signup(request):
-      if request.user.is_authenticated:
+      if request.user.is_authenticated:  # 로그인 되어 있다면 회원가입 불가능
           return redirect('articles:index')
   
-      if request.method == 'POST':
+      if request.method == 'POST':  # 회원가입하는 유저
           form = CustomUserCreationForm(request.POST)
           if form.is_valid():
               user = form.save()
               auth_login(request, user)
               return redirect('articles:index')
-      else:
+      else:  # GET으로 요청 받았다면
           form = CustomUserCreationForm()
       context = {
           'form': form,

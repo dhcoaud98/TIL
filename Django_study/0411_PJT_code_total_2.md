@@ -579,12 +579,12 @@ from django.views.decorators.http import require_http_methods, require_POST
 from django.contrib.auth.decorators import login_required
 
 
-
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_http_methods, require_POST, require_safe
 from .models import Article, Comment
 from .forms import ArticleForm, CommentForm
+
 
 # Create your views here.
 @require_safe

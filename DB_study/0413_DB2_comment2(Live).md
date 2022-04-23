@@ -16,7 +16,7 @@ from django.conf import settings
 
 
 class Article(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # Article은 User를 참조함
     title = models.CharField(max_length=10)
     content = models.TextField()
     image = models.ImageField(upload_to='images/', blank=True)
@@ -56,7 +56,7 @@ $ python manage.py migrate
       
       class Meta:
           model = Article
-          fields = ('title', 'content',)
+          fields = ('title', 'content',)  # user는 출력하지 않아도 되기 때문에 title과 content만 출력되도록 한다. 
   ```
 
   ```python
@@ -65,14 +65,14 @@ $ python manage.py migrate
   @login_required
   @require_http_methods(['GET', 'POST'])
   def create(request):
-      if request.method == 'POST':
+      if request.method == 'POST':  # 생성
           form = ArticleForm(request.POST)
           if form.is_valid():
               article = form.save(commit=False)
-              article.user = request.user
-              article.save()  # 누가 작성한 글인지?
+              article.user = request.user  # 누가 작성한 글인지?
+              article.save() 
               return redirect('articles:detail', article.pk)
-      else:
+      else:  # 조회
           form = ArticleForm()
       context = {
           'form': form,
@@ -86,14 +86,13 @@ $ python manage.py migrate
   
   @require_POST
   def delete(request, pk):
-      
-      if request.user.is_authticated:
+      if request.user.is_authticated:  # 로그인 되어 있는지?
           if request.user == article.user:  # 자신이 작성한 게시글만 삭제 가능하도록
   	        article = get_object_or_404(Article, pk=pk)
       	    article.delete()
       return redirect('articles:index')
   ```
-
+  
   ```python
   # articles/views.py
   
@@ -109,7 +108,7 @@ $ python manage.py migrate
                   return redirect('articles:detail', article.pk)
           else:
               form = ArticleForm(instance=article)
-      else:
+      else:  # 자신이 작성한 글이 아닐 경우
           return redirect('articles:index')
       context = {
           'article': article,
@@ -117,7 +116,7 @@ $ python manage.py migrate
       }
       return render(request, 'articles/update.html', context)
   ```
-
+  
   ```django
   <!-- articles/index.html -->
   
@@ -126,7 +125,7 @@ $ python manage.py migrate
     <p><b>작성자 : {{ article.user }}</b></p>
   ...
   ```
-
+  
   ```django
   <!-- articles/detail.html -->
   <!-- 해당 게시글의 작성자가 아니라면, 수정/삭제 버튼을 출력하지 않도록 처리 -->
@@ -152,8 +151,14 @@ $ python manage.py migrate
 # articles/models.py
 
 class Comment(models.Model):
-    article = models.ForeignKey(Article, on_delete=models.CASCADE)
-    user = models.ForeignKey(settings.AUTH_USER_NODEL, on_delete=models.CASCADE)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)  # 댓글 생성시 article을 참조
+    user = models.ForeignKey(settings.AUTH_USER_NODEL, on_delete=models.CASCADE)  # user:comment = 1:N
+    content = models.CharField(max_length=200)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):  # content가 보일 수 있도록
+        return self.content
 ```
 
 ```bash
@@ -176,7 +181,7 @@ class CommentForm(forms.ModelForm):
     
     class Meta:
         model = Comment
-        fields = ('article', 'user',)
+        fields = ('article', 'user',)  # 작성자와 user만 표현되도록 
 ```
 
 ```python
@@ -188,8 +193,8 @@ def comments_create(request, pk):
         comment_form = CommentForm(request.POST)
         if comment_form.is_valid():  # 유효성 검사 통과?
             comment = comment_form.save(commit=False)
-            comment.article = article  # article 조회한 거 넣어줌
-            comment.user =request.user
+            comment.article = article  # 현재 article 조회한 거 넣어줌
+            comment.user =request.user  # 작성자 정보 넣어줌
             comment.save()
         return redirect('articles:detail', article.pk)
     return redirect('accounts:login')

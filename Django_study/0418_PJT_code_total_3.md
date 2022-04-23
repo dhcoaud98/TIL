@@ -16,6 +16,7 @@ class Article(models.Model):
     like_users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='like_articles')
      
     
+# accounts/models.py
 class User(AbstractUser):
     # symmetrical=False로 둔 이유는 팔로우하면 자동으로 맞팔로우를 만들지 않기 위해
     followings = models.ManyToManyField('self', symmetrical=False, related_name='followers')  
@@ -32,7 +33,7 @@ $ python manage.py migrate
 
 urlpattenrs = [
     ...
-    path('<int:article_pk>/likes/', views.likes, name='likes'),
+    path('<int:article_pk>/likes/', views.likes, name='likes'),  # 좋아요
 ]
 ```
 
@@ -41,8 +42,8 @@ urlpattenrs = [
 
 urlpattenrs = [
     ...,
-    path('<username>/', views.profile, name='profile'),
-    path('<int:user_pk>/follow/', views.follow, name='follow'),
+    path('<username>/', views.profile, name='profile'), # 프로필
+    path('<int:user_pk>/follow/', views.follow, name='follow'),  # 팔로우
 ]
 ```
 
