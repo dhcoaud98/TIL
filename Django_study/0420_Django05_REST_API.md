@@ -36,7 +36,7 @@
 
   주어진 리소스(자원)에 수행하길 원하는 행동을 나타냄
 
-  HTTP Method 예시 : GET, POST, PUT(수정), DELETE(삭제)
+  HTTP Method 예시 : **GET, POST, PUT(수정), DELETE(삭제)**
 
 * HTTP response status codes (응답)
 
@@ -94,7 +94,7 @@
 
     http(s), data, file, ftp, mailto
 
-  * **HOST** (Domail name) : 요청 받는 웹 서버의 이름 이다. IP address를 직접 사용할 수 있지만 실 사용시 불편하므로 웹에서 그리 자주 사용되지는 않는다. 
+  * **Host** (Domail name) : 요청 받는 웹 서버의 이름 이다. IP address를 직접 사용할 수 있지만 실 사용시 불편하므로 웹에서 그리 자주 사용되지는 않는다. 
 
   * **Port** : 웹 서버 상의 리소스에 접근하는데 사용되는 기술적인 '문(gate)', 로컬 서버에서 접근할 때 나타난다. 
 
@@ -112,7 +112,7 @@
 
 ### 2. RESTful API
 
-#### 1. API
+#### 1. API(Application Programming Interface)
 
 * 프로그래밍 언어가 제공하는 기능을 수행할 수 있게 만든 인터페이스
 
@@ -125,6 +125,10 @@
   웹 애플리케이션 개발에서 다른 서비스에 요청을 보내고 응답 받기 위해 정의된 명세
 
   현재 웹 개발은 모든 것을 직접 개발하기보다 여러 Open API를 활용하는 추세
+  
+* 응답 데이터 타입
+
+  HTML, XML, JSON 파일 등이 있다. 
 
 #### 2. REST
 
@@ -142,9 +146,9 @@
 
     프로그래밍을 통해 클라이언트의 요청에 JSON을 응답하는 서버를 구성한다. 
 
-* REST의 자원과 주소의 지정 방법
+* **REST의 자원과 주소의 지정 방법**
 
-  1. 자원 : URL
+  1. 자원 : URI
   2. 행위 : HTTP Method
   3. 표현 : 자원과 행위를 통해 궁극적으로 표현되는(추상화된) 결과물, json으로 표현된 데이터를 제공한다. 
 
@@ -153,7 +157,7 @@
   1. '정보'는 URI로 표현한다.
   2. 자원에 대한 '행위'는 HTTP Method로 표현한다.
 
-* 설계 방법론은 지키지 않았을 때 잃는 것보다 지켰을 때 얻는 것이 훨씬 많다. 
+* 설계 방법론은 지키지 않았을 때 잃는 것보다 지켰을 때 얻는 것이 훨씬 많다. 하지만 설계 방법을 지키지 않더라도 동작 여부에는 큰 영향을 미치지는 않는다. 
 
 #### 3. JSON 
 
@@ -161,124 +165,133 @@
 * 사람이 읽거나 쓰기 쉽고 기계가 파싱(해석, 분석)하고 만들어내기 쉽다. 
 * 파이선의 dictionary, 자바스크립트의 object처럼 C계열의 언어가 갖고 있는 자료구조로 쉽게 변화할 수 있는 key-value 형태의 구조를 갖고 있다. 
 
+#### 3. RESTful API
+
+* REST 원리를 따라 설계한 API이다. 
+* RESTful services, 혹은 simply REST services라고도 부른다. 
+* 프로그래밍을 통해 클라이언트의 요청에 JSON을 응답하는 서버를 구성한다. 
+
+
+
 <br>
 
 ### 3. Response
 
-1. 제공된 00_json_response 프로젝트 진행
+#### 1. 제공된 00_json_response 프로젝트 진행
 
-   ```bash
-   $ python -m venv venv
-   $ source venv/Scripts/activate
-   $ pip install -r requirements.txt
-   ```
+```bash
+$ python -m venv venv
+$ source venv/Scripts/activate
+$ pip install -r requirements.txt
+```
 
-   ```python
-   # articles/models.py
-   
-   from django.db import models
-   
-   # Create your models here.
-   class Article(models.Model):
-       title = models.CharField(max_length=100)
-       content = models.TextField()
-       created_at = models.DateTimeField(auto_now_add=True)
-       updated_at = models.DateTimeField(auto_now=True)
-   ```
+```python
+# articles/models.py
 
-   ```python
-   # settings.py
-   
-   INSTALLED_APPS = [
-       'artices',
-       'django_seed',
-   ]
-   ```
+from django.db import models
 
-   ```python
-   # my_api/urls.py
-   
-   
-   urlpatterns = [
-       path('admin/', admin.site.urls),
-       path('api/v1/',include('articles.url')),
-   ]
-   ```
+# Create your models here.
+class Article(models.Model):
+    title = models.CharField(max_length=100)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+```
 
-   * 모델 구조에 맞는 데이터 생성하기
+```python
+# settings.py
 
-   ```bash
-   $ python manage.py migrate
-   $ python manage.py seed articles --number=20
-   ```
+INSTALLED_APPS = [
+    'artices',
+    'django_seed',
+]
+```
 
-   ```python
-   # articles/url.py
-   
-   urlpatterns = [
-       path('html/', views.article_html),
-       path('json-1/', views.article_json-1),
-       path('json-2/', views.article_json-2),
-       path('json-3/', views.article_json-3),
-   ]
-   ```
+```python
+# my_api/urls.py
 
-   ```python
-   # articles/views.py
-   
-   def article_html(request):
-       articles = Article.objects.all()
-       context = {
-           'articles': articles,
-       }
-       return render(request, 'articles/article.html', context)
-   ```
 
-   ```django
-   <!-- articles/article.html -->
-   
-   <body>
-     {% for article in articles %}
-       <h2>{{ article.pk }}번 글. {{ article.title }}</h2>
-       <p>{{ article.content }}</p>
-       <hr>
-     {% endfor %}
-   </body>
-   ```
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/v1/',include('articles.url')),
+]
+```
 
-   :small_red_triangle_down: 1. JsonResponse 객체를 활용한 JSON데이터 응답
+* 모델 구조에 맞는 데이터 생성하기
 
-   ```python
-   # articles/views.py
-   
-   def article_json_1(request):
-       articles = Article.objects.all()
-       articles_json = []
-   
-       for article in articles:
-           articles_json.append(
-               {
-                   'id': article.pk,
-                   'title': article.title,
-                   'content': article.content,
-                   'created_at': article.created_at,
-                   'updated_at': article.updated_at,
-               }
-           )
-       return JsonResponse(articles_json, safe=False)
-   ```
+```bash
+$ python manage.py migrate
+$ python manage.py seed articles --number=20
+```
 
-   * content-type entity header
+```python
+# articles/url.py
 
-     데이터의 media typed을 나타내기 위해 사용된다. 
+urlpatterns = [
+    path('html/', views.article_html),
+    path('json-1/', views.article_json-1),
+    path('json-2/', views.article_json-2),
+    path('json-3/', views.article_json-3),
+]
+```
 
-     응답 내에 있는 컨텐츠의 컨텐츠 유형이 실제로 무엇인지 클라이언트에게 알려준다. 
+```python
+# articles/views.py
 
-2. **JsonResponse** objects
+def article_html(request):
+    articles = Article.objects.all()
+    context = {
+        'articles': articles,
+    }
+    return render(request, 'articles/article.html', context)
+```
 
-  JSON-encoded response를 만드는 HttpResponse의 서브 클래스이다. 
+```django
+<!-- articles/article.html -->
 
-  'safe' 파라미터 : True가 기본 값, dict이외의 객체를 _직렬화_하려면 False로 설정해야 한다.
+<body>
+  {% for article in articles %}
+    <h2>{{ article.pk }}번 글. {{ article.title }}</h2>
+    <p>{{ article.content }}</p>
+    <hr>
+  {% endfor %}
+</body>
+```
+
+:small_red_triangle_down:  1. JsonResponse 객체를 활용한 JSON데이터 응답
+
+```python
+# articles/views.py
+from django.http.response import JsonResponse
+
+def article_json_1(request):
+    articles = Article.objects.all()
+    articles_json = []
+
+    for article in articles:
+        articles_json.append(
+            {
+                'id': article.pk,
+                'title': article.title,
+                'content': article.content,
+                'created_at': article.created_at,
+                'updated_at': article.updated_at,
+            }
+        )
+    return JsonResponse(articles_json, safe=False)
+```
+
+* content-type entity header
+
+  데이터의 media typed을 나타내기 위해 사용된다. 
+
+  응답 내에 있는 컨텐츠의 컨텐츠 유형이 실제로 무엇인지 클라이언트에게 알려준다. 
+
+* **JsonResponse** objects
+
+    JSON-encoded response를 만드는 HttpResponse의 서브 클래스이다. 
+
+    'safe' 파라미터 : True가 기본 값, dict이외의 객체를 _직렬화_하려면 False로 설정해야 한다.
 
   ```python
   # JsonResponse 예시
@@ -287,7 +300,9 @@
   response = JsonResponse([1, 2,3], safe= False)
   ```
 
-  **직렬화** : 데이터 구조나 객체 상태를 동일하거나 다른 컴퓨터 환경에 저장하고, 나 중에 재구성할 수 있는 포맷으로 변환하는 과정
+#### 2. **직렬화** 
+
+데이터 구조나 객체 상태를 동일하거나 다른 컴퓨터 환경에 저장하고, 나 중에 재구성할 수 있는 포맷으로 변환하는 과정
 
   > modelform
   >
@@ -315,6 +330,8 @@
       data = serializers.serialize('json', articles)
       return HttpResponse(data, content_type='application/json')
   ```
+
+#### 3. **DRF** 
 
   :small_red_triangle_down:3. Response - :star2: **Django REST Framework (DRF)**
 
@@ -586,7 +603,7 @@ def article_detail(request, article_pk):
         return Response(data, status=status.204_NO_COUNTENT)
     
     elif request.method == 'PUT':  # 수정
-        serializer = ArticleSerializer(article, request.data)
+        serializer = ArticleSerializer(article, request.data)  # 기존 값, 새롭게 넣을 값
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data)
@@ -681,7 +698,7 @@ def article_detail(request, article_pk):
        class Meta:
            model = Comment
            fields = '__all__'
-           read_only_field = ('article',)
+           read_only_fields = ('article',)
           
    ```
 
@@ -748,7 +765,7 @@ def article_detail(request, article_pk):
        artist = get_object_or_404(Artist, pk=artist_pk)
        serializer = MusicSerializer(data=request.data)
        if serializer.is_valid(raise_exception=True):
-           serializer.save(artist=artist)
+           serializer.save(artist=artist)  # 새롭게 생성하기 위해서는 참조되는 값인 artist 값이 있어야 하므로 
            return Response(serializer.data, status=status.HTTP_201_CREATED)
    
    
@@ -811,7 +828,7 @@ def article_detail(request, article_pk):
           
           
   class ArticleSerializer(serializers.ModelSerializer):  # 전체 필드 조회
-  	comment_set = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+  	comment_set = serializers.PrimaryKeyRelatedField(many=True, read_only=True)  # 역참조 
       
       class Meta:
           model = Article
@@ -823,7 +840,7 @@ def article_detail(request, article_pk):
       class Meta:
           model = Comment
           fields = '__all__'
-          read_only_field = ('article',)
+          read_only_fields = ('article',)
          
   ```
 
@@ -849,10 +866,12 @@ def article_detail(request, article_pk):
         class Meta:
             model = Comment
             fields = '__all__'
-            read_only_field = ('article',)
+            read_only_field = ('article',)  
+            # Comment 모델은 Article 모델을 참조하기 때문에 article 필드는 읽기 전용 필드여야 한다. 
             
             
     class ArticleSerializer(serializers.ModelSerializer):  # 전체 필드 조회
+        # comment_set = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     	comment_set = CommentSerializer(many=True, read_only=True)
         # 댓글의 내용을 다 출력
         
@@ -862,7 +881,7 @@ def article_detail(request, article_pk):
     ```
 
   2. 특정 게시글에 작성된 댓글의 개수 추가 :red_circle: (완성 serializers.py)
-
+  
      ```python
      # articles/serializers.py
      
@@ -883,7 +902,7 @@ def article_detail(request, article_pk):
          class Meta:
              model = Comment
              fields = '__all__'
-             read_only_field = ('article',)
+             read_only_fields = ('article',)
              
              
      class ArticleSerializer(serializers.ModelSerializer):  # 전체 필드 조회
