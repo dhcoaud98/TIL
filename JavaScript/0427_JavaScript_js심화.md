@@ -206,6 +206,8 @@
    // 4-1. setAttribute
    const header = document.querySelector('#location-header')
    header.setAttribute('class', 'ssafy-location')
+   = header.classList.add('ssafy-location')
+   = header.class = ssafy-location
    
    // 4-2. getAttribute
    const getAttr = document.querySelector('.ssafy-location')
