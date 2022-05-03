@@ -44,7 +44,7 @@
   <h1>{{ person.username }}의 프로필 페이지</h1>
   {% with followings=person.followings.all followers=person.followers.all %}
     <div>
-      <div id ='follow_count'>팔로잉 수 : {{ followings|length }} / 팔로워 수 : {{ followers|length }}</div>
+      <div id ='follow-count'>팔로잉 수 : {{ followings|length }} / 팔로워 수 : {{ followers|length }}</div>
     </div>
     {% if user != person %}
       <div>
@@ -90,7 +90,7 @@
         const isFollowed = response.data.isFollowed
         const followBtn = document.querySelector('#follow-input')
         // 2-2-2. 팔로잉 수, 팔로워 수 비동기로 바꾸기
-        const followCountDiv = document.querySelector('#follow_count')
+        const followCountDiv = document.querySelector('#follow-count')
         const followersCount = response.data.followers_count
         const followinsCount = response.data.followings_count
 
@@ -107,6 +107,36 @@
   })
 
 </script>
+```
+
+```python
+from django.http import JsonResponse
+
+@require_POST
+def follow(request, user_pk):
+    if request.user.is_authenticated:
+        you = get_object_or_404(get_user_model(), pk=user_pk)
+        me = request.user
+
+        if me != you:
+            if you.followers.filter(pk=me.pk).exists():
+                # 언팔로우
+                you.followers.remove(me)
+                is_followed = False
+            else:
+                # 팔로우
+                you.followers.add(me)
+                is_followed = True
+            follower_status= {
+                'is_followed' : is_followed,
+                'followers_count' : you.followers.count(),
+                'followings_count' : you.followings.count(),
+            }
+            return JsonResponse(follower_status)
+
+        return redirect('accounts:profile', you.username)
+    return redirect('accounts:login')
+
 ```
 
 
