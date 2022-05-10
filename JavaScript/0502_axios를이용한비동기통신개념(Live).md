@@ -289,6 +289,7 @@ axios({
     method:'get',
     url: API_URL,
 })
+  .then()
     
 </script>
 ```
