@@ -1,0 +1,14 @@
+2
+3 4
+AAAB
+B_BB
+AB_B
+8 4
+____
+AAAA
+BBB_
+AABA
+_BBA
+ABAB
+BABA
+ABAB
