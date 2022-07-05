@@ -16,7 +16,7 @@
 
 ## 1. ERD 및 INDEX
 
-<img src="Database 설계 및 SQL 작성.assets/image-20220614163326269.png" alt="image-20220614163326269" style="zoom:67%;" />
+![image-20220705103329414](Database 설계 및 SQL 작성.assets/image-20220705103329414.png)
 
 ### 1. Articles
 
@@ -29,8 +29,6 @@ profile은 유저의 정보를 담는 공간입니다. 이름과 소개, 그동�
 ### 3. Calendar
 
 calendar는 여행일정을 기록해주는 달력입니다.
-
-<img src="Database 설계 및 SQL 작성.assets/image-20220614163338077.png" alt="image-20220614163338077" style="zoom:67%;" />
 
 다양한 디자인이 있지만 위의 사진을 예로 들자면 여행의 출발일부터 도착일까지 원하는 색으로 표시할 수 있고, 해당일을 클릭하면 사용해야할 티켓, 어플 연동, 일정을 확인할 수 있습니다. 
 
