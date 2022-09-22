@@ -1,0 +1,78 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://i7a705.p.ssafy.io:3306/prosn?serverTimezone=UTC&characterEncoding=UTF-8
+    # url: jdbc:mysql://localhost:3306/prosn?serverTimezone=UTC&characterEncoding=UTF-8
+    username: prosn
+    password: prosn705@#
+  mvc:
+    path match:
+      matching-strategy: ant_path_matcher
+  mail:
+    host: smtp.naver.com
+    port: 465
+    username: prosnteam
+    password: prosn705@#
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+  security:
+    oauth2:
+      client:
+        provider:
+          kakao:
+            authorizationUri: https://kauth.kakao.com/oauth/authorize
+            tokenUri: https://kauth.kakao.com/oauth/token
+            userInfoUri: https://kapi.kakao.com/v2/user/me
+            userNameAttribute: id
+          naver:
+            authorizationUri: https://nid.naver.com/oauth2.0/authorize
+            tokenUri: https://nid.naver.com/oauth2.0/token
+            userInfoUri: https://openapi.naver.com/v1/nid/me
+            userNameAttribute: response
+        registration:
+          kakao:
+            client-id: 6ed2b72fdabc00402337b642bd55e31c
+            client-secret: 5IAVcnLWNJuhRqjJoNmFi5dGNOsXB4hU
+            client-authentication-method: POST
+            authorization-grant-type: authorization_code
+            redirect-uri: http://i7a705.p.ssafy.io:8081/login/oauth2/code/kakao
+            scope:
+              - account_email
+              - profile_nickname
+            client-name: Kakao
+          naver:
+            client-id: LwPwQBNyhqiw3dYPZ4Av
+            client-secret: kgifmSYn1o
+            authorization-grant-type: authorization_code
+            redirect-uri: http://i7a705.p.ssafy.io:8080/login/oauth2/code/naver
+            scope: email
+            client-name: Naver
+          google:
+            client-id: 295331690529-n55t5j7cu200lok9c151d25nrfr2vv6g.apps.googleusercontent.com
+            client-secret: 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
+            authorization_code: authorization_code
+            redirect_uri: http://i7a705.p.ssafy.io:8080/login/oauth2/code/google
+
+  redis:
+    host: i7a705.p.ssafy.io
+    port: 6379
+
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true;
+        use_sql_comments: true
+
+logging.level:
+  org.hibernate.SQL: debug
+
+server.error.include-message: always
+jwt:
+  secret: c2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQtc2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQK
