@@ -6,13 +6,14 @@ def bt(n, k):
     global answer, result
 
     if n == k:
-        print(result)
-        if result not in used:
-            used.append(result)
-        # if result not in used:
-        #     used.append(result)
-        #     print("used", used)
-            max_dalante = mat(result)
+        a = sorted(result)
+        # result = sorted(result)
+        if a in used:
+            return
+        else:
+            used.append(a)
+            # print('used', used)
+            max_dalante = mat(a)
             if max_dalante > answer:
                 answer = max_dalante
 
@@ -31,7 +32,7 @@ def mat(lst):
 
 
 TC = int(input())
-for tc in range(1, 1+1):
+for tc in range(1, 5+1):
     N, P = map(int, input().split())
 
     used = []
