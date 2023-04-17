@@ -8,7 +8,7 @@
 
 ### 1. GIT 
 
-#### Undoing things (되돌리기)
+#### 1.Undoing things (되돌리기)
 
 1. **파일 내용을 수정 전으로 되돌리기 **
 
@@ -211,12 +211,3 @@ $ git restore README.md
 
 
 
-<br>
-
-### 2. 페어 프로그래밍 안내
-
-#### 1. Feature Branch Workflow : 저장소의 소유권이 있는 경우
-
-
-
-<br>
