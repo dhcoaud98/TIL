@@ -131,7 +131,7 @@ ReactDOM.render(<App/>, document.getElementById('root'));
 
 * 컴포넌트 내부의 Immutable Data
 * JSX 내부에 { this.props.propsName }
-* 컴포넌트를 사용 할 떄, <> 괄호 안에 propsName="value"
+* 컴포넌트를 사용 할 때, <> 괄호 안에 propsName="value"
 * this.props.children은 기본적으로 갖고 있는 props로서, <Cpnt>여기에 있는 값이 들어간다.</Cpnt>
 
 
